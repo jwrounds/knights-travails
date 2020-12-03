@@ -1,10 +1,12 @@
 class Space
-  attr_reader :x, :y, :n
-  attr_accessor :adjacent, :visited, :coordinates
+  attr_reader :x, :y
+  attr_accessor :adjacent, :visited, :coordinates, :d, :path
 
   def initialize x, y
     @x = x
     @y = y
+    @d = 0
+    @path = []
     @adjacent = []
     @visited = false
     @coordinates = [x, y]
@@ -41,8 +43,8 @@ class Board
     adj_spaces = adj_spaces.filter do |space|
       x = space[0]
       y = space[1]
-      if x < 7 && x >= 0
-        if y < 7 && y >= 0
+      if x <= 7 && x >= 0
+        if y <= 7 && y >= 0
            space
         end
       end
@@ -65,13 +67,45 @@ class Board
     8.times do |i|
       row = []
       8.times do |j|
-        row << self.spaces[i][j].coordinates
       end
-      p row
     end
   end
 end
 
 class Knight
 
+  def shortest_path start, stop, board = Board.new,
+
+    start_space = board.spaces[start[0]][start[1]]
+    stop_space = board.spaces[stop[0]][stop[1]]
+
+    queue = [] 
+    start_space.visited = true
+    queue << start_space
+  
+    while queue.length > 0 
+      current = queue.shift
+      current.path << current.coordinates
+      if current == stop_space
+        str = "You made it in #{current.d} moves! Your path:"
+        current.path.each {|space| str += "\n#{space}"}
+        return puts str
+      end
+      current.adjacent.each do |adj|
+        space = board.spaces[adj[0]][adj[1]]
+
+        unless space.visited
+          space.visited = true
+          space.d = current.d + 1
+          current.path.each {|s| space.path << s}
+          queue.push space
+        end
+      end
+    end
+  end
 end
+
+board = Board.new
+knight = Knight.new
+
+knight.shortest_path([0,0], [7,7], board)
